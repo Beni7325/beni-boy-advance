@@ -12,9 +12,10 @@ pub struct Cartridge {
     external_ram_bank: usize
 }
 
+#[derive(Debug)]
 pub enum CartridgeError {
     RomReadError,
-    RomSizeError
+    InvalidRomError
 }
 
 impl Cartridge {
@@ -29,7 +30,11 @@ impl Cartridge {
         
         let rom_size = rom.len();
         if rom_size < 0x150 {
-            return Err(CartridgeError::RomSizeError)
+            return Err(CartridgeError::InvalidRomError)
+        }
+
+        if rom[0x149] >= 4 {
+            return Err(CartridgeError::InvalidRomError)
         }
 
         let external_ram_size = EXTERNAL_RAM_SIZES[rom[0x149] as usize];
