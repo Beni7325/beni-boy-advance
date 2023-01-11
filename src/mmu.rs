@@ -5,8 +5,8 @@ pub struct Mmu {
     cart: Cartridge,
     ppu: Ppu,
 
-    wram: [u8; 0x2000],
-    hram: [u8; 0x007F],
+    wram: Box<[u8; 0x2000]>,
+    hram: Box<[u8; 0x007F]>,
     io_regs: [u8; 0x0080]  // Temporary
 }
 
@@ -25,8 +25,8 @@ impl Mmu {
         Mmu {
             cart: cartridge,
             ppu: Ppu::new(),
-            wram: [0; 0x2000],
-            hram: [0; 0x007F],
+            wram: vec![0; 0x2000].into_boxed_slice().try_into().expect("Array size mismatch!"),
+            hram: vec![0; 0x007F].into_boxed_slice().try_into().expect("Array size mismatch!"),
             io_regs: [0; 0x0080]
         }
     }
