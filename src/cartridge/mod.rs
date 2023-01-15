@@ -26,6 +26,8 @@ impl Cartridge {
             Err(_) => return Err(CartridgeError::RomReadError)
         };
         
+        // First we need to check if the ROM file is long enough to check some fields
+        // from its header
         let rom_size = rom.len();
         if rom_size < 0x150 {
             return Err(CartridgeError::InvalidRomError)
@@ -77,5 +79,4 @@ fn get_rom_size(byte: u8) -> Option<usize> {
         0x08 => Some(0x800000),  // 8 MiB
         _ => None
     }
-
 }
