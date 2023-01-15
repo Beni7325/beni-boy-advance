@@ -1,4 +1,4 @@
-# Beni Boy Advance
+# Beni Boy Color
 
 ### WIP
 
