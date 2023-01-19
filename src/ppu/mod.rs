@@ -12,4 +12,20 @@ impl Ppu {
         }
     }
 
+    pub fn read_vram(&self, addr: u16) -> u8 {
+        self.vram[addr as usize]
+    }
+
+    pub fn write_vram(&mut self, addr: u16, data: u8) {
+        self.vram[addr as usize] = data;
+    }
+
+    pub fn read_oam(&self, addr: u16) -> u8 {
+        self.oam[addr as usize]
+    }
+
+    pub fn write_oam(&mut self, addr: u16, data: u8) {
+        self.oam[addr as usize] = data;
+    }
+
 }

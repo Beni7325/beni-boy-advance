@@ -53,6 +53,22 @@ impl Cartridge {
         
     }
 
+    pub fn read_rom(&self, addr: u16) -> u8 {
+        self.rom[addr as usize]
+    }
+
+    pub fn write_rom(&mut self, addr: u16, data: u8) {
+
+    }
+
+    pub fn read_ram(&self, addr: u16) -> u8 {
+        self.external_ram[addr as usize]   // TODO: check there is ram
+    }
+
+    pub fn write_ram(&mut self, addr: u16, data: u8) {
+        self.external_ram[addr as usize] = data;   // TODO: check there is ram
+    }
+
 }
 
 fn get_ext_ram_size(byte: u8) -> Option<usize> {
