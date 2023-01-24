@@ -62,7 +62,8 @@ impl Cartridge {
     }
 
     pub fn read_ram(&self, addr: u16) -> u8 {
-        self.external_ram[addr as usize]   // TODO: check there is ram
+        //self.external_ram[addr as usize]   // TODO: check there is ram
+        0xFF
     }
 
     pub fn write_ram(&mut self, addr: u16, data: u8) {

@@ -13,4 +13,13 @@ impl BeniBoyColor {
         BeniBoyColor { cpu: Cpu::new(), mmu: Mmu::new(rom_path) }
     }
 
+    pub fn run(&mut self, m_cycles: u64) {
+
+        let mut i = 0;
+        while i < m_cycles {
+            i += self.cpu.run_instruction(&mut self.mmu) as u64;
+        }
+
+    }
+
 }

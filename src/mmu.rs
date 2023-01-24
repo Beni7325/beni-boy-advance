@@ -52,7 +52,7 @@ impl Mmu {
             0xC000 ..= 0xCFFF => self.wram[(addr - 0xC000) as usize],
 
             // WRAM 1-n
-            0xD000 ..= 0xDFFF => self.wram[(addr - 0xD000) as usize],  // TODO: When converting to GBC, implement wram banking
+            0xD000 ..= 0xDFFF => self.wram[(addr - 0xC000) as usize],  // TODO: When converting to GBC, implement wram banking
 
             // ECHO
             0xE000 ..= 0xFDFF => self.wram[(addr - 0xE000) as usize],
@@ -64,10 +64,15 @@ impl Mmu {
             0xFEA0 ..= 0xFEFF => 0xFF,
 
             // IO Regs
-            0xFF00 ..= 0xFF7F => 0xFF,
+            0xFF00 ..= 0xFF7F => {
+                if addr == 0xFF44 {
+                    return 0x90;
+                }
+                self.io_regs[(addr - 0xFF00) as usize]
+            },
 
             // HRAM
-            0xFF80 ..= 0xFFFE => self.hram[(addr - 0xC000) as usize],
+            0xFF80 ..= 0xFFFE => self.hram[(addr - 0xFF80) as usize],
 
             // Interrupt Enable Reg
             0xFFFF            => self.interrupt_enable
@@ -94,7 +99,7 @@ impl Mmu {
             0xC000 ..= 0xCFFF => self.wram[(addr - 0xC000) as usize] = data,
 
             // WRAM 1-n
-            0xD000 ..= 0xDFFF => self.wram[(addr - 0xD000) as usize] = data,  // TODO: When converting to GBC, implement wram banking
+            0xD000 ..= 0xDFFF => self.wram[(addr - 0xC000) as usize] = data,  // TODO: When converting to GBC, implement wram banking
 
             // ECHO
             0xE000 ..= 0xFDFF => self.wram[(addr - 0xE000) as usize] = data,  // TODO: Read more on bug with echo and OAM DMA
@@ -106,10 +111,15 @@ impl Mmu {
             0xFEA0 ..= 0xFEFF => { /* Can't write here */ },
 
             // IO Regs
-            0xFF00 ..= 0xFF7F => {},
+            0xFF00 ..= 0xFF7F => {
+                self.io_regs[(addr - 0xFF00) as usize] = data;
+                if addr == 0xFF02 && data == 0x81 {
+                    print!("{}", self.io_regs[1] as char);
+                }
+            }
 
             // HRAM
-            0xFF80 ..= 0xFFFE => self.hram[(addr - 0xC000) as usize] = data,
+            0xFF80 ..= 0xFFFE => self.hram[(addr - 0xFF80) as usize] = data,
 
             // Interrupt Enable Reg
             0xFFFF            => self.interrupt_enable = data
@@ -119,7 +129,7 @@ impl Mmu {
 
     pub fn write_word(&mut self, addr: u16, data: u16) {
         self.write_byte(addr, (data & 0x00FF) as u8);
-        self.write_byte( addr+1, (data & 0xFF00) as u8 >> 8);
+        self.write_byte( addr+1, ((data & 0xFF00) >> 8) as u8);
     }
 
 }
