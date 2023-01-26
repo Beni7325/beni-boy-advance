@@ -1,3 +1,6 @@
+use super::interrupts::InterruptMasterEnable;
+
+
 pub struct Registers {
     pub a: u8,
     pub f: u8,
@@ -8,7 +11,8 @@ pub struct Registers {
     pub h: u8,
     pub l: u8,
     pub pc: u16,
-    pub sp: u16
+    pub sp: u16,
+    pub ime: InterruptMasterEnable
 }
 
 #[derive(Clone, Copy)]
@@ -33,7 +37,8 @@ impl Registers {
             h: 0x01,
             l: 0x4D,
             pc: 0x0100,
-            sp: 0xFFFE
+            sp: 0xFFFE,
+            ime: InterruptMasterEnable::Enabled
         }
     }
 

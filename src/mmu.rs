@@ -7,7 +7,8 @@ pub struct Mmu {
     wram: Box<[u8; 0x2000]>,
     hram: Box<[u8; 0x007F]>,
     io_regs: [u8; 0x0080],  // Temporary
-    interrupt_enable: u8
+    pub interrupt_enable: u8,
+    pub interrupt_flag: u8
 }
 
 impl Mmu {
@@ -28,7 +29,8 @@ impl Mmu {
             wram: vec![0; 0x2000].into_boxed_slice().try_into().expect("Array size mismatch!"),
             hram: vec![0; 0x007F].into_boxed_slice().try_into().expect("Array size mismatch!"),
             io_regs: [0; 0x0080],
-            interrupt_enable: 0x00
+            interrupt_enable: 0x00,
+            interrupt_flag: 0xE1
         }
     }
 
@@ -65,10 +67,16 @@ impl Mmu {
 
             // IO Regs
             0xFF00 ..= 0xFF7F => {
-                if addr == 0xFF44 {
-                    return 0x90;
+                match ((addr - 0xFF00) & 0x7F) as u8 {
+
+                    // IF
+                    0x0F => self.interrupt_flag,
+
+                    // LY
+                    0x44 => 0x90,
+
+                    _ => self.io_regs[(addr - 0xFF00) as usize]
                 }
-                self.io_regs[(addr - 0xFF00) as usize]
             },
 
             // HRAM
@@ -113,8 +121,23 @@ impl Mmu {
             // IO Regs
             0xFF00 ..= 0xFF7F => {
                 self.io_regs[(addr - 0xFF00) as usize] = data;
-                if addr == 0xFF02 && data == 0x81 {
+                if addr == 0xFF && data == 0x81 {
                     print!("{}", self.io_regs[1] as char);
+                }
+                match ((addr - 0xFF00) & 0x7F) as u8 {
+
+                    //
+                    0x02 => {
+                        if data == 0x81 {
+                            print!("{}", self.io_regs[1] as char)
+                        }
+                        self.io_regs[(addr - 0xFF00) as usize] = data
+                    },
+
+                    // IF
+                    0x0F => self.interrupt_flag = data,
+
+                    _ => self.io_regs[(addr - 0xFF00) as usize] = data
                 }
             }
 

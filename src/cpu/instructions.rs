@@ -1,4 +1,5 @@
 use super::{Cpu, registers::FlagMask, CpuState};
+use super::interrupts::InterruptMasterEnable;
 use crate::mmu::Mmu;
 
 
@@ -24,11 +25,9 @@ impl Cpu {
 
             // JR (unconditional)
             0x18 => {
-                //let jump_xxx = mmu.read_byte(self.regs.pc) as i32;
                 let jump_len = mmu.read_byte(self.regs.pc) as i8;
                 self.regs.pc = self.regs.pc.wrapping_add(1);
                 self.regs.pc = self.regs.pc.wrapping_add_signed(jump_len as i16);
-                //self.regs.pc = ((self.regs.pc as u32 as i32).wrapping_add(jump_xxx)) as u16;
                 3
             },
 
@@ -322,7 +321,6 @@ impl Cpu {
 
             // HALT
             0x76 => {
-                // TODO: Implement HALT bug?
                 self.state = CpuState::Halted;
                 1
             },
@@ -476,7 +474,7 @@ impl Cpu {
             // RETI
             0xD9 => {
                 self.regs.pc = self.stack_pop(mmu);
-                // TODO: SET IME
+                self.regs.ime = InterruptMasterEnable::Enabled;
                 4
             },
 
@@ -556,14 +554,13 @@ impl Cpu {
 
             // DI
             0xF3 => {
-                // TODO: clear IME
+                self.regs.ime = InterruptMasterEnable::Disabled;
                 1
             },
 
             // EI
             0xFB => {
-                // TODO: Set IME
-                // TODO: IME bug
+                self.regs.ime = InterruptMasterEnable::EnabledWithDelay;
                 1
             },
 
@@ -643,8 +640,6 @@ impl Cpu {
     }
 
     fn cb_instructions(&mut self, mmu: &mut Mmu, instr: u8) -> u8 {
-
-        // println!("{:02X} {} {}", instr, (instr >> 6) & 0x3, instr & 0x7);
 
         match (instr >> 6) & 0x3 {
 
@@ -749,7 +744,7 @@ impl Cpu {
     
     }
 
-    fn stack_push(&mut self, mmu: &mut Mmu, data: u16) {
+    pub fn stack_push(&mut self, mmu: &mut Mmu, data: u16) {
         self.regs.sp = self.regs.sp.wrapping_sub(2);
         mmu.write_word(self.regs.sp, data);
     }
