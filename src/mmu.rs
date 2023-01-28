@@ -1,8 +1,9 @@
-use crate::{cartridge::Cartridge, ppu::Ppu};
+use crate::{cartridge::Cartridge, ppu::Ppu, timer::Timer};
 
 pub struct Mmu {
     cart: Cartridge,
     ppu: Ppu,
+    pub timer: Timer,
 
     wram: Box<[u8; 0x2000]>,
     hram: Box<[u8; 0x007F]>,
@@ -26,6 +27,7 @@ impl Mmu {
         Mmu {
             cart: cartridge,
             ppu: Ppu::new(),
+            timer: Timer::new(),
             wram: vec![0; 0x2000].into_boxed_slice().try_into().expect("Array size mismatch!"),
             hram: vec![0; 0x007F].into_boxed_slice().try_into().expect("Array size mismatch!"),
             io_regs: [0; 0x0080],
@@ -68,6 +70,18 @@ impl Mmu {
             // IO Regs
             0xFF00 ..= 0xFF7F => {
                 match ((addr - 0xFF00) & 0x7F) as u8 {
+
+                    // DIV
+                    0x04 => (self.timer.div >> 8) as u8,
+
+                    // TIMA
+                    0x05 => self.timer.tima,
+
+                    // TMA
+                    0x06 => self.timer.tma,
+
+                    // TAC
+                    0x07 => self.timer.tac,
 
                     // IF
                     0x0F => self.interrupt_flag,
@@ -134,8 +148,20 @@ impl Mmu {
                         self.io_regs[(addr - 0xFF00) as usize] = data
                     },
 
+                    // DIV
+                    0x04 => self.timer.div = 0,
+
+                    // TIMA
+                    0x05 => self.timer.tima = data,
+
+                    // TMA
+                    0x06 => self.timer.tma = data,
+
+                    // TAC
+                    0x07 => self.timer.tac = 0xF8 | (data & 0x07),
+
                     // IF
-                    0x0F => self.interrupt_flag = data,
+                    0x0F => self.interrupt_flag = data & 0x1F,
 
                     _ => self.io_regs[(addr - 0xFF00) as usize] = data
                 }
@@ -153,6 +179,10 @@ impl Mmu {
     pub fn write_word(&mut self, addr: u16, data: u16) {
         self.write_byte(addr, (data & 0x00FF) as u8);
         self.write_byte( addr+1, ((data & 0xFF00) >> 8) as u8);
+    }
+
+    pub fn tick_components(&mut self, m_cycles: u64) {
+        self.timer.tick(m_cycles, &mut self.interrupt_flag);
     }
 
 }

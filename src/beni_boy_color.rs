@@ -17,7 +17,9 @@ impl BeniBoyColor {
 
         let mut i = 0;
         while i < m_cycles {
-            i += self.cpu.run_instruction(&mut self.mmu) as u64;
+            let cycles = self.cpu.run_instruction(&mut self.mmu) as u64;
+            self.mmu.tick_components(cycles);
+            i += cycles;
         }
 
     }
