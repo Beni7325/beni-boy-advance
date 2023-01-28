@@ -166,7 +166,10 @@ impl Mmu {
                     // OAM DMA
                     0x46 => {
                         // For now we just copy all the data at once
-                        let base_addr = (data as u16) << 8;
+                        let mut base_addr = (data as u16) << 8;
+                        if base_addr >= 0xE000 {
+                            base_addr -= 0x2000;
+                        }
                         for idx in 0 .. 160 {
                             let byte = self.read_byte(base_addr + idx);
                             self.write_byte(0xFE00 + idx, byte);
