@@ -7,7 +7,7 @@ pub struct Mmu {
 
     wram: Box<[u8; 0x2000]>,
     hram: Box<[u8; 0x007F]>,
-    io_regs: [u8; 0x0080],  // Temporary
+    io_regs: Box<[u8; 0x0080]>,  // Temporary
     pub interrupt_enable: u8,
     pub interrupt_flag: u8
 }
@@ -30,7 +30,7 @@ impl Mmu {
             timer: Timer::new(),
             wram: vec![0; 0x2000].into_boxed_slice().try_into().expect("Array size mismatch!"),
             hram: vec![0; 0x007F].into_boxed_slice().try_into().expect("Array size mismatch!"),
-            io_regs: [0; 0x0080],
+            io_regs: vec![0; 0x0080].into_boxed_slice().try_into().expect("Array size mismatch!"),
             interrupt_enable: 0x00,
             interrupt_flag: 0xE1
         }
@@ -162,6 +162,16 @@ impl Mmu {
 
                     // IF
                     0x0F => self.interrupt_flag = data & 0x1F,
+
+                    // OAM DMA
+                    0x46 => {
+                        // For now we just copy all the data at once
+                        let base_addr = (data as u16) << 8;
+                        for idx in 0 .. 160 {
+                            let byte = self.read_byte(base_addr + idx);
+                            self.write_byte(0xFE00 + idx, byte);
+                        }
+                    },
 
                     _ => self.io_regs[(addr - 0xFF00) as usize] = data
                 }
