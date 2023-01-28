@@ -1,3 +1,6 @@
+use crate::cpu::InterruptMask;
+
+
 pub struct Timer {
     pub div: u16,
     pub tima: u8,
@@ -44,7 +47,7 @@ impl Timer {
                 // Interrupt if it overflows
                 if self.tima == 0 {
                     self.tima = self.tma;
-                    *interrupt_flag |= 0x04;
+                    *interrupt_flag |= InterruptMask::Timer as u8;
                 }
 
             }

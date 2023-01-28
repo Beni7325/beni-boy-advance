@@ -3,9 +3,10 @@ mod registers;
 mod instructions;
 mod interrupts;
 
+pub use self::interrupts::InterruptMask;
+
 use crate::mmu::Mmu;
 use self::{registers::Registers, interrupts::InterruptMasterEnable};
-
 
 
 enum CpuState {

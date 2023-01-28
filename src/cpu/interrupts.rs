@@ -1,5 +1,4 @@
 use crate::mmu::Mmu;
-
 use super::Cpu;
 
 
@@ -10,6 +9,11 @@ pub enum InterruptMasterEnable {
     Disabled,
     Enabled,
     EnabledWithDelay
+}
+
+#[repr(u8)]
+pub enum InterruptMask {
+    Timer = 0x04
 }
 
 impl Cpu {
