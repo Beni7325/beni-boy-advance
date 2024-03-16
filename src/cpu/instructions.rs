@@ -840,20 +840,20 @@ impl Cpu {
         if !self.regs.get_flag(FlagMask::N) {
             
             if self.regs.get_flag(FlagMask::C) || self.regs.a > 0x99 {
-                self.regs.a += 0x60;
+                self.regs.a = self.regs.a.wrapping_add(0x60);
                 self.regs.set_flag_val(FlagMask::C, true);
             }
             if self.regs.get_flag(FlagMask::H) || (self.regs.a & 0x0F) > 0x09 {
-                self.regs.a += 0x06;
+                self.regs.a = self.regs.a.wrapping_add(0x06);
             }
 
         } else {
 
             if self.regs.get_flag(FlagMask::C) {
-                self.regs.a -= 0x60;
+                self.regs.a = self.regs.a.wrapping_sub(0x60);
             }
             if self.regs.get_flag(FlagMask::H) {
-                self.regs.a -= 0x06;
+                self.regs.a = self.regs.a.wrapping_sub(0x06);
             }
             
         }
