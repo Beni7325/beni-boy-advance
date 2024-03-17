@@ -2,7 +2,7 @@ use crate::{cartridge::Cartridge, ppu::Ppu, timer::Timer};
 
 pub struct Mmu {
     cart: Cartridge,
-    ppu: Ppu,
+    pub ppu: Ppu,
     pub timer: Timer,
 
     wram: Box<[u8; 0x2000]>,

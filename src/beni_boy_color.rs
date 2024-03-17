@@ -4,7 +4,7 @@ use crate::mmu::Mmu;
 
 pub struct BeniBoyColor {
     cpu: Cpu,
-    mmu: Mmu
+    pub mmu: Mmu
 }
 
 impl BeniBoyColor {
@@ -13,15 +13,9 @@ impl BeniBoyColor {
         BeniBoyColor { cpu: Cpu::new(), mmu: Mmu::new(rom_path) }
     }
 
-    pub fn run(&mut self, m_cycles: u64) {
-
-        let mut i = 0;
-        while i < m_cycles {
-            let cycles = self.cpu.run_instruction(&mut self.mmu) as u64;
-            self.mmu.tick_components(cycles);
-            i += cycles;
-        }
-
+    pub fn tick(&mut self) {
+        let instr_cycles = self.cpu.run_instruction(&mut self.mmu);
+        self.mmu.tick_components(instr_cycles as u64);
     }
 
 }

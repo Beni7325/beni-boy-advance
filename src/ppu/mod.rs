@@ -1,3 +1,7 @@
+pub const SCREEN_WIDTH: usize = 160;
+pub const SCREEN_HEIGHT: usize = 144;
+
+
 enum PpuState {
     Glitched,
 
@@ -5,6 +9,8 @@ enum PpuState {
 
 
 pub struct Ppu {
+    pub screen: Box<[u8; SCREEN_WIDTH * SCREEN_HEIGHT * 3]>,
+
     vram: Box<[u8; 0x2000]>,
     oam: Box<[u8; 0x00A0]>,
 
@@ -27,6 +33,7 @@ impl Ppu {
 
     pub fn new() -> Ppu {
         Ppu {
+            screen: vec![0; SCREEN_WIDTH * SCREEN_HEIGHT * 3].into_boxed_slice().try_into().expect("Array size mismatch!"),
             vram: vec![0; 0x2000].into_boxed_slice().try_into().expect("Array size mismatch!"),
             oam: vec![0; 0x00A0].into_boxed_slice().try_into().expect("Array size mismatch!"),
             wx: 0x00,
