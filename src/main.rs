@@ -1,5 +1,6 @@
 extern crate sdl2;
 
+use bytemuck::cast_slice;
 use sdl2::{event::{Event, WindowEvent}, pixels::PixelFormatEnum};
 use std::{env, time::{Duration, Instant}};
 
@@ -39,7 +40,7 @@ fn main() {
     
     let texture_creator = canvas.texture_creator();
     
-    let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB888, ppu::SCREEN_WIDTH as u32, ppu::SCREEN_HEIGHT as u32).unwrap();
+    let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::ARGB8888, ppu::SCREEN_WIDTH as u32, ppu::SCREEN_HEIGHT as u32).unwrap();
 
     let mut event_pump = sdl_context.event_pump().unwrap();
 
@@ -63,11 +64,10 @@ fn main() {
         }
 
         //canvas.clear();
-        let _ = texture.update(None, &*gbc.mmu.ppu.screen, ppu::SCREEN_WIDTH * 3);
+        let _ = texture.update(None, cast_slice(gbc.mmu.ppu.screen.as_ref()), ppu::SCREEN_WIDTH * 4);
         canvas.copy(&texture, None, None).unwrap();
         canvas.present();
 
-        // std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
         let frame_duration = Duration::from_secs_f64(1.0 / FRAME_RATE);
         std::thread::sleep(
             frame_duration
