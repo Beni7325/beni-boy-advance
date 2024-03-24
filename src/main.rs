@@ -12,7 +12,7 @@ mod timer;
 mod beni_boy_color;
 
 const FRAME_RATE: f64 = 59.7275;
-const M_CYCLES_PER_FRAME: u32 = 70224;
+const M_CYCLES_PER_FRAME: u32 = 17556;
 const SCREEN_SIZE_MULTIPLIER: u32 = 6;
 
 fn main() {
