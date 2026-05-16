@@ -1,5 +1,6 @@
 mod arm7tdmi;
 mod thumb;
+mod alu;
 mod registers;
 mod decode;
 

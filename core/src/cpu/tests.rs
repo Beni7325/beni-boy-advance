@@ -4,6 +4,7 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use pretty_assertions::assert_eq;
 use crate::cpu::Arm7Tdmi;
+use crate::cpu::decode::extract_bits;
 use crate::cpu::registers::Registers;
 
 #[derive(Debug, Deserialize, Clone, PartialEq)]
@@ -127,6 +128,31 @@ fn run_thumb_fixture_test(fixture_path: &str) {
     }
 }
 
+fn run_thumb_fixture_test_no_mul_carry(fixture_path: &str, high_bit: u8, n_bits: u8, mul_opcode: u8) {
+
+    let mut cpu = Arm7Tdmi::default();
+
+    for (i, fixture) in load_test_fixtures(fixture_path).iter_mut().enumerate() {
+        
+        cpu.registers = fixture.initial.clone().into();
+        cpu.execute_thumb(fixture.opcode as u16);
+        cpu.registers.save_banked_regs();
+
+        if extract_bits(fixture.opcode, high_bit, n_bits) == mul_opcode as u32 {
+            // Sets the 29th bit of the expected cpsr (carry) to the one of the initial state
+            // This is done as the carry flag after a mul is undefined per the spec and for now we just dont change it
+            let bit_29_mask = 1 << 29;
+            fixture.final_state.cpsr = (fixture.final_state.cpsr & !bit_29_mask) | (fixture.initial.cpsr & bit_29_mask);
+        }
+
+        assert_eq!(
+            fixture.final_state,
+            CpuState::from(cpu.registers),
+            "Test case {i} failed",
+        );
+    }
+}
+
 #[test]
 fn test_thumb_add_sub() {
     run_thumb_fixture_test("tests/single-step-tests/thumb_add_sub.json");
@@ -135,4 +161,14 @@ fn test_thumb_add_sub() {
 #[test]
 fn test_thumb_lsl_lsr_asr() {
     run_thumb_fixture_test("tests/single-step-tests/thumb_lsl_lsr_asr.json");
+}
+
+#[test]
+fn test_thumb_mov_cmp_add_sub_imm() {
+    run_thumb_fixture_test("tests/single-step-tests/thumb_mov_cmp_add_sub.json");
+}
+
+#[test]
+fn test_thumb_alu_operations() {
+    run_thumb_fixture_test_no_mul_carry("tests/single-step-tests/thumb_data_proc.json", 9, 4, 0b1101);
 }
