@@ -8,8 +8,8 @@ pub enum OperationMode {
     Irq = 0b10010,
     Svc = 0b10011,
     Abt = 0b10111,
-    Sys = 0b11011,
-    Und = 0b11111
+    Und = 0b11011,
+    Sys = 0b11111
 }
 
 impl From<u32> for OperationMode {
@@ -20,8 +20,8 @@ impl From<u32> for OperationMode {
             0b10010 => OperationMode::Irq,
             0b10011 => OperationMode::Svc,
             0b10111 => OperationMode::Abt,
-            0b11011 => OperationMode::Sys,
-            0b11111 => OperationMode::Und,
+            0b11011 => OperationMode::Und,
+            0b11111 => OperationMode::Sys,
             _ => panic!("Invalid operation mode")
         }
     }
